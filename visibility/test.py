@@ -1,7 +1,7 @@
 from string import Template
 import subprocess
 
-ccode_template = "$VISIBILITY int foo(){ return 4;}"
+ccode_template = "$DVISIBILITY int foo();\n$CVISIBILITY int foo(){ return 4;}"
 code_visibilities = {"no attr":"", "attr def":'__attribute__ ((visibility ("default")))', "attr hid":'__attribute__ ((visibility ("hidden")))'}
 
 gcc_template = "g++ foo.cpp -ofoo.so -shared $GVISIBILITY $LVISIBILITY"
@@ -15,10 +15,10 @@ with open("local.vs", "w") as fid:
 linker_visibilities = {"no script":"", "script local":'-Wl,--version-script=local.vs', "script global":'-Wl,--version-script=global.vs'}
 
 results = {}
-for lvis_name, lvis in linker_visibilities.items():
-    for gvis_name, gvis in gcc_visibilities.items():
-        for cvis_name, cvis in code_visibilities.items():
-            ccode = Template(ccode_template).substitute(VISIBILITY=cvis)
+for cvis_name, cvis in code_visibilities.items():
+    for lvis_name, lvis in linker_visibilities.items():
+        for gvis_name, gvis in gcc_visibilities.items():
+            ccode = Template(ccode_template).substitute(CVISIBILITY=cvis,DVISIBILITY=cvis)
             with open("foo.cpp", "w") as fid:
                 fid.write(ccode)
 
